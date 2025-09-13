@@ -1,8 +1,11 @@
 module offshoot-report
 
-go 1.23
+go 1.25.1
 
-require github.com/wailsapp/wails/v2 v2.10.2
+require (
+	github.com/jung-kurt/gofpdf v1.16.2
+	github.com/wailsapp/wails/v2 v2.10.2
+)
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect
@@ -33,5 +36,3 @@ require (
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
 )
-
-// replace github.com/wailsapp/wails/v2 v2.10.2 => /Users/jw_zhao/go/pkg/mod

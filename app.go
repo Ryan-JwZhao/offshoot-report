@@ -3,25 +3,129 @@ package main
 import (
 	"context"
 	"fmt"
+	"path/filepath"
+	"strings"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-// App struct
 type App struct {
 	ctx context.Context
 }
 
-// NewApp creates a new App application struct
+type ReportRequest struct {
+	ProjectTitle string   `json:"projectTitle"`
+	Backups      string   `json:"backups"`
+	FilePaths    []string `json:"filePaths"`
+}
+
+type FileInfo struct {
+	Name      string `json:"name"`
+	FileType  string `json:"fileType"`
+	FileSize  string `json:"fileSize"`
+	HashValue string `json:"hashValue"`
+	Status    string `json:"status"`
+}
+
+type ClipsOverview struct {
+	VideoFiles int    `json:"videoFiles"`
+	AudioFiles int    `json:"audioFiles"`
+	OtherFiles int    `json:"otherFiles"`
+	TotalFiles int    `json:"totalFiles"`
+	VideoSize  string `json:"videoSize"`
+	AudioSize  string `json:"audioSize"`
+	OtherSize  string `json:"otherSize"`
+	TotalSize  string `json:"totalSize"`
+}
+
 func NewApp() *App {
 	return &App{}
 }
 
-// startup is called when the app starts. The context is saved
-// so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 }
 
-// Greet returns a greeting for the given name
-func (a *App) Greet(name string) string {
-	return fmt.Sprintf("Hello %s, It's show time!", name)
+func (a *App) domReady(ctx context.Context) {
+}
+
+func (a *App) shutdown(ctx context.Context) {
+}
+
+func (a *App) SelectFiles() ([]string, error) {
+	files, err := runtime.OpenMultipleFilesDialog(a.ctx, runtime.OpenDialogOptions{
+		Title: "Select MHL Files",
+		Filters: []runtime.FileFilter{
+			{
+				DisplayName: "MHL Files (*.mhl)",
+				Pattern:     "*.mhl",
+			},
+			{
+				DisplayName: "Text Files (*.txt)",
+				Pattern:     "*.txt",
+			},
+			{
+				DisplayName: "All Files (*.*)",
+				Pattern:     "*.*",
+			},
+		},
+	})
+	return files, err
+}
+
+func (a *App) GenerateReport(request ReportRequest) error {
+	if request.ProjectTitle == "" || request.Backups == "" || len(request.FilePaths) == 0 {
+		return fmt.Errorf("请填写完整信息")
+	}
+
+	for _, filePath := range request.FilePaths {
+		err := a.processFile(filePath, request)
+		if err != nil {
+			return fmt.Errorf("处理文件 %s 时出错: %v", filepath.Base(filePath), err)
+		}
+	}
+
+	return nil
+}
+
+func (a *App) processFile(filePath string, request ReportRequest) error {
+	// Parse the log file
+	logData, err := parseLogFile(filePath)
+	if err != nil {
+		return err
+	}
+
+	// Get output directory (same as input file)
+	outputDir := filepath.Dir(filePath)
+	outputFileName := fmt.Sprintf("%s_DMT Report.pdf", logData.ReelName)
+	outputPath := filepath.Join(outputDir, outputFileName)
+
+	// Generate PDF
+	err = generatePDF(outputPath, logData, request)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func getSuffix(filename string) string {
+	ext := filepath.Ext(filename)
+	if len(ext) > 1 {
+		return strings.ToUpper(ext[1:])
+	}
+	return ""
+}
+
+func humanReadableSize(bytes int64) string {
+	const unit = 1024
+	if bytes < unit {
+		return fmt.Sprintf("%d B", bytes)
+	}
+	div, exp := int64(unit), 0
+	for n := bytes / unit; n >= unit; n /= unit {
+		div *= unit
+		exp++
+	}
+	return fmt.Sprintf("%.2f %cB", float64(bytes)/float64(div), "KMGTPE"[exp])
 }
