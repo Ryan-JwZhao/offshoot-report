@@ -26,7 +26,7 @@
 
     <!-- 选择MHL文件 -->
     <div class="form-group">
-      <label>请选择MHL文件:</label>
+      <label>请选择Log文件:</label>
       <div class="file-select">
         <input
             type="text"
@@ -88,7 +88,7 @@ export default {
           backups: this.form.backups,
           filePaths: [this.form.filePath]
         })
-        this.showMessage("报告生成成功!", "success")
+        this.showMessage("报告生成成功!" + this.form.projectTitle, "success")
       } catch (error) {
         this.showMessage("生成报告失败: " + error, "error")
       }

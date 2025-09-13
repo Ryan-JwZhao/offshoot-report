@@ -9,7 +9,14 @@ import (
 )
 
 func generatePDF(outputPath string, logData *LogData, request ReportRequest) error {
+	//fmt.Printf("--- DEBUG: Received request in Go ---\n")
+	//fmt.Printf("ProjectTitle: '%s'\n", request.ProjectTitle)
+	//fmt.Printf("Backups: '%s'\n", request.Backups)
+	//fmt.Printf("FilePaths: %v\n", request.FilePaths)
+	//fmt.Printf("------------------------------------\n")
+
 	pdf := gofpdf.New("L", "mm", "A4", "")
+	pdf.SetMargins(10, 15, 10)
 	pdf.AddPage()
 
 	homeDir, err := os.UserHomeDir()
@@ -18,23 +25,31 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 	}
 
 	// 构造完整的字体路径
-	fontPath_Normal := filepath.Join(homeDir, "Library", "Fonts", "MapleMonoNormalNL-Light.ttf")
-	fontPath_Bold := filepath.Join(homeDir, "Library", "Fonts", "MapleMonoNormalNL-Medium.ttf")
+	fontPath_Normal := filepath.Join(homeDir, "Library", "Fonts", "MapleMonoNormalNL-CN-Light.ttf")
+	fontPath_Bold := filepath.Join(homeDir, "Library", "Fonts", "MapleMonoNormalNL-CN-Medium.ttf")
 
 	// Header
 
 	pdf.AddUTF8Font("MapleMono", "", fontPath_Normal)
 	pdf.AddUTF8Font("MapleMono", "B", fontPath_Bold)
+
 	pdf.SetFont("MapleMono", "", 12)
+	pdf.SetXY(10, 10)
 	pdf.Cell(200, 10, "Clips Report")
 	pdf.SetXY(250, 10)
 	pdf.Cell(40, 10, logData.GenerationTime)
-	pdf.Ln(20)
+	pdf.Ln(15)
 
 	// Title
 	pdf.SetFont("MapleMono", "B", 20)
 	pdf.Cell(0, 15, logData.ReelName)
 	pdf.Ln(20)
+
+	// 在 generatePDF 中，就在 pdf.Cell(...) 之前
+	//fmt.Printf("--- DEBUG (inside generatePDF): Drawing ProjectTitle Cell ---\n")
+	//fmt.Printf("ProjectTitle string passed to pdf.Cell: '%s'\n", request.ProjectTitle)
+	//fmt.Printf("Current PDF X, Y before Cell: %f, %f\n", pdf.GetX(), pdf.GetY())
+	//fmt.Printf("----------------------------------------------------------------\n")
 
 	// Project info
 	pdf.SetFont("MapleMono", "", 10)

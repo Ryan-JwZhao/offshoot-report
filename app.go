@@ -100,6 +100,12 @@ func (a *App) processFile(filePath string, request ReportRequest) error {
 	outputFileName := fmt.Sprintf("%s_DMT Report.pdf", logData.ReelName)
 	outputPath := filepath.Join(outputDir, outputFileName)
 
+	// --- 在这里添加调试信息 ---
+	//fmt.Printf("--- DEBUG: About to call generatePDF ---\n")
+	//fmt.Printf("Passing ProjectTitle to generatePDF: '%s'\n", request.ProjectTitle)
+	//fmt.Printf("---------------------------------------\n")
+	// --- 调试信息结束 ---
+
 	// Generate PDF
 	err = generatePDF(outputPath, logData, request)
 	if err != nil {
