@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/jung-kurt/gofpdf"
 )
@@ -10,20 +12,32 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 	pdf := gofpdf.New("L", "mm", "A4", "")
 	pdf.AddPage()
 
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(err) // 或者更优雅的错误处理
+	}
+
+	// 构造完整的字体路径
+	fontPath_Normal := filepath.Join(homeDir, "Library", "Fonts", "MapleMonoNormalNL-Light.ttf")
+	fontPath_Bold := filepath.Join(homeDir, "Library", "Fonts", "MapleMonoNormalNL-Medium.ttf")
+
 	// Header
-	pdf.SetFont("Arial", "", 12)
+
+	pdf.AddUTF8Font("MapleMono", "", fontPath_Normal)
+	pdf.AddUTF8Font("MapleMono", "B", fontPath_Bold)
+	pdf.SetFont("MapleMono", "", 12)
 	pdf.Cell(200, 10, "Clips Report")
 	pdf.SetXY(250, 10)
 	pdf.Cell(40, 10, logData.GenerationTime)
 	pdf.Ln(20)
 
 	// Title
-	pdf.SetFont("Arial", "B", 20)
+	pdf.SetFont("MapleMono", "B", 20)
 	pdf.Cell(0, 15, logData.ReelName)
 	pdf.Ln(20)
 
 	// Project info
-	pdf.SetFont("Arial", "", 10)
+	pdf.SetFont("MapleMono", "", 10)
 	pdf.SetTextColor(100, 100, 100)
 	pdf.Cell(0, 8, request.ProjectTitle)
 	pdf.Ln(8)
@@ -37,19 +51,19 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 
 	// Clips Overview
 	pdf.SetTextColor(0, 0, 0)
-	pdf.SetFont("Arial", "B", 11)
+	pdf.SetFont("MapleMono", "B", 11)
 	pdf.Cell(0, 10, "Clips Overview")
 	pdf.Ln(12)
 
 	// Overview table
-	pdf.SetFont("Arial", "B", 10)
+	pdf.SetFont("MapleMono", "B", 10)
 	pdf.SetFillColor(240, 240, 240)
 	pdf.CellFormat(60, 8, "", "", 0, "", true, 0, "")
 	pdf.CellFormat(30, 8, "Clips", "", 0, "C", true, 0, "")
 	pdf.CellFormat(30, 8, "Files", "", 0, "C", true, 0, "")
 	pdf.CellFormat(40, 8, "Size", "", 1, "C", true, 0, "")
 
-	pdf.SetFont("Arial", "", 10)
+	pdf.SetFont("MapleMono", "", 10)
 	pdf.SetFillColor(255, 255, 255)
 
 	// Video clips row
@@ -83,7 +97,7 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 	pdf.Ln(15)
 
 	// File details table header
-	pdf.SetFont("Arial", "B", 9)
+	pdf.SetFont("MapleMono", "B", 9)
 	pdf.SetFillColor(240, 240, 240)
 	pdf.CellFormat(50, 8, "Name", "", 0, "", true, 0, "")
 	pdf.CellFormat(20, 8, "Type", "", 0, "C", true, 0, "")
@@ -93,7 +107,7 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 	pdf.CellFormat(20, 8, "Status", "", 1, "C", true, 0, "")
 
 	// File details rows
-	pdf.SetFont("Arial", "", 8)
+	pdf.SetFont("MapleMono", "", 8)
 	for i, file := range logData.Files {
 		if i%2 == 0 {
 			pdf.SetFillColor(255, 255, 255)
