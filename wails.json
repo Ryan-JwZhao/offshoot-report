@@ -1,7 +1,7 @@
 {
   "$schema": "https://wails.io/schemas/config.v2.json",
-  "name": "offshoot-report",
-  "outputfilename": "Offshoot Report",
+  "name": "Offshoot Report Pro",
+  "outputfilename": "Offshoot Report Pro",
   "frontend": {
     "dir": "./frontend",
     "install": "npm install",
@@ -12,6 +12,8 @@
     "email": "ryanzhao0708@163.com"
   },
   "info": {
-    "productVersion": "1.0.1"
+    "productVersion": "1.0.3",
+    "copyright": "Copyright © 2025 RyanZhao",
+    "comments": "Brief description of your application."
   }
 }

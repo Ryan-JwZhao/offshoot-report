@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h2>Offshoot Report</h2>
+    <h2>Offshoot Report Pro</h2>
 
     <!-- 项目名称 -->
     <div class="form-group">

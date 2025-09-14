@@ -16,7 +16,8 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 	//fmt.Printf("------------------------------------\n")
 
 	pdf := gofpdf.New("L", "mm", "A4", "")
-	pdf.SetMargins(10, 15, 10)
+	pdf.SetMargins(10, 10, 10)
+	pdf.SetAutoPageBreak(true, 10)
 	pdf.AddPage()
 
 	homeDir, err := os.UserHomeDir()
@@ -138,7 +139,7 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 		pdf.CellFormat(20, 6, file.Status, "", 1, "C", true, 0, "")
 
 		// Check if we need a new page
-		if pdf.GetY() > 180 {
+		if pdf.GetY() > 200 {
 			pdf.AddPage()
 		}
 	}

@@ -15,9 +15,10 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:  "Offshoot Report",
-		Width:  450,
-		Height: 180,
+		Title:         "Offshoot Report Pro",
+		Width:         450,
+		Height:        400,
+		DisableResize: true,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
