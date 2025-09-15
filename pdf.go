@@ -44,7 +44,7 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 	// Title
 	pdf.SetFont("MapleMono", "B", 20)
 	pdf.Cell(0, 15, logData.ReelName)
-	pdf.Ln(20)
+	pdf.Ln(15)
 
 	// 在 generatePDF 中，就在 pdf.Cell(...) 之前
 	//fmt.Printf("--- DEBUG (inside generatePDF): Drawing ProjectTitle Cell ---\n")
@@ -60,67 +60,72 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 
 	if logData.StartTime != "" && logData.FinishTime != "" {
 		pdf.Cell(0, 8, fmt.Sprintf("Offloaded between %s", logData.StartTime))
-		pdf.Ln(8)
+		pdf.Ln(5)
+
+		// 获取当前X坐标
+		currentX := pdf.GetX()
+		// 设置新的X坐标，向右移动20个单位
+		pdf.SetX(currentX + 29.5)
 		pdf.Cell(0, 8, fmt.Sprintf("and %s", logData.FinishTime))
-		pdf.Ln(15)
+		pdf.Ln(10)
 	}
 
 	// Clips Overview
 	pdf.SetTextColor(0, 0, 0)
 	pdf.SetFont("MapleMono", "B", 11)
 	pdf.Cell(0, 10, "Clips Overview")
-	pdf.Ln(12)
+	pdf.Ln(10)
 
 	// Overview table
 	pdf.SetFont("MapleMono", "B", 10)
 	pdf.SetFillColor(240, 240, 240)
-	pdf.CellFormat(60, 8, "", "", 0, "", true, 0, "")
-	pdf.CellFormat(30, 8, "Clips", "", 0, "C", true, 0, "")
-	pdf.CellFormat(30, 8, "Files", "", 0, "C", true, 0, "")
-	pdf.CellFormat(40, 8, "Size", "", 1, "C", true, 0, "")
+	pdf.CellFormat(30, 8, "", "", 0, "", true, 0, "")
+	pdf.CellFormat(18, 8, "Clips", "LR", 0, "C", true, 0, "")
+	pdf.CellFormat(18, 8, "Files", "R", 0, "C", true, 0, "")
+	pdf.CellFormat(24, 8, "Size", "", 1, "C", true, 0, "")
 
 	pdf.SetFont("MapleMono", "", 10)
 	pdf.SetFillColor(255, 255, 255)
 
 	// Video clips row
-	pdf.CellFormat(60, 7, "Video Clips", "", 0, "", true, 0, "")
-	pdf.CellFormat(30, 7, fmt.Sprintf("%d", logData.ClipsOverview.VideoFiles), "", 0, "C", true, 0, "")
-	pdf.CellFormat(30, 7, fmt.Sprintf("%d", logData.ClipsOverview.VideoFiles), "", 0, "C", true, 0, "")
-	pdf.CellFormat(40, 7, logData.ClipsOverview.VideoSize, "", 1, "C", true, 0, "")
+	pdf.CellFormat(30, 7, "Video Clips", "", 0, "", true, 0, "")
+	pdf.CellFormat(18, 7, fmt.Sprintf("%d", logData.ClipsOverview.VideoFiles), "LR", 0, "R", true, 0, "")
+	pdf.CellFormat(18, 7, fmt.Sprintf("%d", logData.ClipsOverview.VideoFiles), "R", 0, "R", true, 0, "")
+	pdf.CellFormat(24, 7, logData.ClipsOverview.VideoSize, "", 1, "R", true, 0, "")
 
 	// Audio clips row
 	pdf.SetFillColor(240, 240, 240)
-	pdf.CellFormat(60, 7, "Audio Clips", "", 0, "", true, 0, "")
-	pdf.CellFormat(30, 7, fmt.Sprintf("%d", logData.ClipsOverview.AudioFiles), "", 0, "C", true, 0, "")
-	pdf.CellFormat(30, 7, fmt.Sprintf("%d", logData.ClipsOverview.AudioFiles), "", 0, "C", true, 0, "")
-	pdf.CellFormat(40, 7, logData.ClipsOverview.AudioSize, "", 1, "C", true, 0, "")
+	pdf.CellFormat(30, 7, "Audio Clips", "", 0, "", true, 0, "")
+	pdf.CellFormat(18, 7, fmt.Sprintf("%d", logData.ClipsOverview.AudioFiles), "LR", 0, "R", true, 0, "")
+	pdf.CellFormat(18, 7, fmt.Sprintf("%d", logData.ClipsOverview.AudioFiles), "R", 0, "R", true, 0, "")
+	pdf.CellFormat(24, 7, logData.ClipsOverview.AudioSize, "", 1, "R", true, 0, "")
 
 	// Other clips row
 	pdf.SetFillColor(255, 255, 255)
-	pdf.CellFormat(60, 7, "Other Files", "", 0, "", true, 0, "")
-	pdf.CellFormat(30, 7, "0", "", 0, "C", true, 0, "")
-	pdf.CellFormat(30, 7, fmt.Sprintf("%d", logData.ClipsOverview.OtherFiles), "", 0, "C", true, 0, "")
-	pdf.CellFormat(40, 7, logData.ClipsOverview.OtherSize, "", 1, "C", true, 0, "")
+	pdf.CellFormat(30, 7, "Other Files", "", 0, "", true, 0, "")
+	pdf.CellFormat(18, 7, "0", "LR", 0, "R", true, 0, "")
+	pdf.CellFormat(18, 7, fmt.Sprintf("%d", logData.ClipsOverview.OtherFiles), "R", 0, "R", true, 0, "")
+	pdf.CellFormat(24, 7, logData.ClipsOverview.OtherSize, "", 1, "R", true, 0, "")
 
 	// Total row
 	pdf.SetFillColor(240, 240, 240)
-	pdf.CellFormat(60, 7, "Total", "", 0, "", true, 0, "")
+	pdf.CellFormat(30, 7, "Total", "", 0, "", true, 0, "")
 	totalClips := logData.ClipsOverview.VideoFiles + logData.ClipsOverview.AudioFiles
-	pdf.CellFormat(30, 7, fmt.Sprintf("%d", totalClips), "", 0, "C", true, 0, "")
-	pdf.CellFormat(30, 7, fmt.Sprintf("%d", logData.ClipsOverview.TotalFiles), "", 0, "C", true, 0, "")
-	pdf.CellFormat(40, 7, logData.ClipsOverview.TotalSize, "", 1, "C", true, 0, "")
+	pdf.CellFormat(18, 7, fmt.Sprintf("%d", totalClips), "LR", 0, "R", true, 0, "")
+	pdf.CellFormat(18, 7, fmt.Sprintf("%d", logData.ClipsOverview.TotalFiles), "R", 0, "R", true, 0, "")
+	pdf.CellFormat(24, 7, logData.ClipsOverview.TotalSize, "", 1, "R", true, 0, "")
 
-	pdf.Ln(15)
+	pdf.Ln(10)
 
 	// File details table header
 	pdf.SetFont("MapleMono", "B", 9)
 	pdf.SetFillColor(240, 240, 240)
-	pdf.CellFormat(50, 8, "Name", "", 0, "", true, 0, "")
+	pdf.CellFormat(75, 8, "Name", "", 0, "", true, 0, "")
 	pdf.CellFormat(20, 8, "Type", "", 0, "C", true, 0, "")
-	pdf.CellFormat(25, 8, "Size", "", 0, "C", true, 0, "")
-	pdf.CellFormat(70, 8, "Hash Values", "", 0, "", true, 0, "")
+	pdf.CellFormat(35, 8, "Size", "", 0, "", true, 0, "")
+	pdf.CellFormat(90, 8, "Hash Values", "", 0, "", true, 0, "")
 	pdf.CellFormat(25, 8, "Backups", "", 0, "C", true, 0, "")
-	pdf.CellFormat(20, 8, "Status", "", 1, "C", true, 0, "")
+	pdf.CellFormat(25, 8, "Status", "", 1, "C", true, 0, "")
 
 	// File details rows
 	pdf.SetFont("MapleMono", "", 8)
@@ -131,12 +136,12 @@ func generatePDF(outputPath string, logData *LogData, request ReportRequest) err
 			pdf.SetFillColor(247, 247, 247)
 		}
 
-		pdf.CellFormat(50, 6, file.Name, "", 0, "", true, 0, "")
+		pdf.CellFormat(75, 6, file.Name, "", 0, "", true, 0, "")
 		pdf.CellFormat(20, 6, file.FileType, "", 0, "C", true, 0, "")
-		pdf.CellFormat(25, 6, file.FileSize, "", 0, "C", true, 0, "")
-		pdf.CellFormat(70, 6, file.HashValue, "", 0, "", true, 0, "")
+		pdf.CellFormat(35, 6, file.FileSize, "", 0, "", true, 0, "")
+		pdf.CellFormat(90, 6, file.HashValue, "", 0, "", true, 0, "")
 		pdf.CellFormat(25, 6, request.Backups, "", 0, "C", true, 0, "")
-		pdf.CellFormat(20, 6, file.Status, "", 1, "C", true, 0, "")
+		pdf.CellFormat(25, 6, file.Status, "", 1, "C", true, 0, "")
 
 		// Check if we need a new page
 		if pdf.GetY() > 200 {
