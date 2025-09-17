@@ -1,4 +1,4 @@
-module offshoot-report
+module offshoot-plus
 
 go 1.25.1
 

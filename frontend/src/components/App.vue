@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h2>Offshoot Report Pro</h2>
+    <h2>Offshoot Plus</h2>
 
     <!-- 项目名称 -->
     <div class="form-group">
@@ -41,6 +41,11 @@
     <!-- 生成按钮 -->
     <button class="generate-btn" @click="generateReport">生成</button>
 
+    <!-- app.vue 添加按钮 -->
+    <!-- 在生成按钮下方添加 -->
+    <button class="save-btn" @click="saveSettings">保存设置</button>
+
+
     <!-- 消息提示 -->
     <div v-if="message" :class="['message', messageClass]">
       {{ message }}
@@ -65,6 +70,20 @@ export default {
     }
   },
   methods: {
+    async saveSettings() {
+      if (!this.form.projectTitle || !this.form.backups) {
+        this.showMessage("项目名称和备份数量不能为空", "error")
+        return
+      }
+      try {
+        await SaveSettings(this.form.projectTitle, this.form.backups)
+        this.showMessage("设置已保存", "success")
+      } catch (error) {
+        this.showMessage("保存设置失败: " + error, "error")
+      }
+    },
+
+
     async selectFile() {
       try {
         const files = await SelectFiles()

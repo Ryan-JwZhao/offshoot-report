@@ -1,0 +1,6 @@
+<key>NSLibraryFolderUsageDescription</key>
+<string>需要访问Application Support文件夹以存储配置信息</string>
+<key>NSHomeFolderUsageDescription</key>
+<string>需要访问用户主目录以读取配置文件</string>
+<key>NSDocumentsFolderUsageDescription</key>
+<string>需要访问文档文件夹以保存生成的PDF报告</string>

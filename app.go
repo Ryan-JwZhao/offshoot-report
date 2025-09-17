@@ -3,11 +3,59 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
+
+// 添加读取配置文件的方法
+func readConfig() (string, string, error) {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return "", "", err
+	}
+
+	configPath := filepath.Join(homeDir, "Library", "Application Support", "Offshoot Plus", "config.txt")
+
+	data, err := os.ReadFile(configPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return "", "", nil
+		}
+		return "", "", err
+	}
+
+	lines := strings.Split(string(data), "\n")
+	if len(lines) < 2 {
+		return "", "", nil
+	}
+
+	return lines[0], lines[1], nil
+}
+
+func (a *App) SaveSettings(projectTitle, backups string) error {
+	if projectTitle == "" || backups == "" {
+		return fmt.Errorf("项目名称和备份数量不能为空")
+	}
+
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return err
+	}
+
+	configDir := filepath.Join(homeDir, "Library", "Application Support", "Offshoot Plus")
+	configPath := filepath.Join(configDir, "config.txt")
+
+	// 创建目录
+	if err := os.MkdirAll(configDir, 0755); err != nil {
+		return err
+	}
+
+	// 写入配置文件
+	return os.WriteFile(configPath, []byte(fmt.Sprintf("%s\n%s", projectTitle, backups)), 0644)
+}
 
 type App struct {
 	ctx context.Context
@@ -73,15 +121,61 @@ func (a *App) SelectFiles() ([]string, error) {
 	return files, err
 }
 
+// 修改GenerateReport方法
 func (a *App) GenerateReport(request ReportRequest) error {
-	if request.ProjectTitle == "" || request.Backups == "" || len(request.FilePaths) == 0 {
-		return fmt.Errorf("请填写完整信息")
+	projectTitle := request.ProjectTitle
+	backups := request.Backups
+
+	// 尝试从配置文件读取
+	cfgProj, cfgBkup, err := readConfig()
+	if err != nil {
+		return err
 	}
 
-	for _, filePath := range request.FilePaths {
-		err := a.processFile(filePath, request)
+	// 判断使用哪个来源的数据
+	useConfig := true
+	if cfgProj == "" || cfgBkup == "" {
+		useConfig = false
+		if projectTitle == "" || backups == "" {
+			return fmt.Errorf("请填写完整信息")
+		}
+	} else {
+		projectTitle = cfgProj
+		backups = cfgBkup
+	}
+
+	// 如果GUI数据有效且配置文件数据不完整，则保存到配置文件
+	if !useConfig && projectTitle != "" && backups != "" {
+		err := a.SaveSettings(projectTitle, backups)
 		if err != nil {
-			return fmt.Errorf("处理文件 %s 时出错: %v", filepath.Base(filePath), err)
+			return err
+		}
+	}
+
+	// 修改输出路径
+	for _, filePath := range request.FilePaths {
+		// 创建输出目录
+		homeDir, _ := os.UserHomeDir()
+		outputDir := filepath.Join(homeDir, "Documents", "Offshoot Reports")
+		if err := os.MkdirAll(outputDir, 0755); err != nil {
+			return err
+		}
+
+		// 修改outputPath生成逻辑
+		logData, err := parseLogFile(filePath)
+		if err != nil {
+			return err
+		}
+		outputFileName := fmt.Sprintf("%s_DMT Report.pdf", logData.ReelName)
+		outputPath := filepath.Join(outputDir, outputFileName)
+
+		err = generatePDF(outputPath, logData, ReportRequest{
+			ProjectTitle: projectTitle,
+			Backups:      backups,
+			FilePaths:    []string{filePath},
+		})
+		if err != nil {
+			return err
 		}
 	}
 

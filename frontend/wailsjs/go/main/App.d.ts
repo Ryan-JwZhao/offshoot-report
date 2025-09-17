@@ -4,4 +4,6 @@ import {main} from '../models';
 
 export function GenerateReport(arg1:main.ReportRequest):Promise<void>;
 
+export function SaveSettings(arg1:string,arg2:string):Promise<void>;
+
 export function SelectFiles():Promise<Array<string>>;
